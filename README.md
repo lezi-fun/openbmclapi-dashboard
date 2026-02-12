@@ -27,7 +27,7 @@
 - `location /` -> 主业务（4000）
 - `location /dashboard/` -> 仪表盘页面（4001）
 - `location = /api/dashboard/stats` -> 仪表盘 API（4001）
-- `access_log ... openbmclapi_geo`：把 `geoip2` 国家码写入日志，后端据此做地图统计
+- `access_log ... openbmclapi_geo`：可选写入 `geoip2` 国家码；后端默认会在 Node 侧通过 `geoip-lite` 按 IP 做 GeoIP 解析
 
 部署命令（宝塔/Nginx Linux 常见流程）：
 
@@ -85,4 +85,4 @@ DASHBOARD_PORT=4001 NGINX_LOG_PATH=/www/wwwlogs/openbmclapi.log npm start
 
 - `DASHBOARD_PORT`：仪表盘端口（默认 `4001`）
 - `NGINX_LOG_PATH`：Nginx 日志路径（默认 `/www/wwwlogs/openbmclapi.log`）
-- `GEO_MODE`：地区模式标识（默认 `nginx_geoip`）
+- `GEO_MODE`：地区模式（默认 `node_geoip`，使用 `geoip-lite` 按 IP 解析；设为 `nginx_geoip` 时优先读取日志中的国家码）

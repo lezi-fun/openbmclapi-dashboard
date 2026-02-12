@@ -6,7 +6,7 @@ const { URL } = require('node:url');
 
 const PORT = Number(process.env.DASHBOARD_PORT || process.env.PORT || 4001);
 const LOG_PATH = process.env.NGINX_LOG_PATH || '/www/wwwlogs/openbmclapi.log';
-const GEO_MODE = process.env.GEO_MODE || 'nginx_geoip';
+const GEO_MODE = process.env.GEO_MODE || 'node_geoip';
 const TREND_STEP_MINUTES = 5;
 const HOST = '0.0.0.0';
 
@@ -31,6 +31,18 @@ let parserState = {
   initialized: false,
   lastError: null
 };
+
+const ipCountryCache = new Map();
+
+let geoipLib = null;
+
+function getGeoipLite() {
+  if (!geoipLib) {
+    geoipLib = require('geoip-lite');
+  }
+  return geoipLib;
+}
+
 
 function parseNginxTime(raw) {
   const match = raw.match(/^(\d{2})\/(\w{3})\/(\d{4}):(\d{2}):(\d{2}):(\d{2}) ([+-]\d{4})$/);
@@ -63,6 +75,26 @@ function normalizeCountry(raw) {
   return value;
 }
 
+function normalizeIp(raw) {
+  if (!raw) return '';
+  if (raw.startsWith('::ffff:')) return raw.slice(7);
+  return raw;
+}
+
+function resolveCountryFromNodeGeoIp(clientIp) {
+  const normalizedIp = normalizeIp(clientIp);
+  if (!normalizedIp) return 'Unknown';
+
+  if (ipCountryCache.has(normalizedIp)) {
+    return ipCountryCache.get(normalizedIp);
+  }
+
+  const lookup = getGeoipLite().lookup(normalizedIp);
+  const country = normalizeCountry(lookup?.country);
+  ipCountryCache.set(normalizedIp, country);
+  return country;
+}
+
 function ensureDayBucket(dayKey) {
   if (!parserState.dayBuckets.has(dayKey)) {
     parserState.dayBuckets.set(dayKey, {
@@ -80,7 +112,7 @@ function applyLogLine(line) {
   const match = line.match(/^(\S+)\s+\S+\s+\S+\s+\[([^\]]+)]\s+"[^"]*"\s+(\d{3})\s+(\d+|-)(?:\s+"[^"]*"\s+"[^"]*"(?:\s+"([^"]+)")?)?/);
   if (!match) return;
 
-  const [, , timeRaw, status, bytesRaw, countryRaw] = match;
+  const [, clientIp, timeRaw, status, bytesRaw, countryRaw] = match;
   const statusCode = Number(status);
   if (!Number.isFinite(statusCode)) return;
 
@@ -106,7 +138,9 @@ function applyLogLine(line) {
   trend.requests += 1;
   trend.bandwidth += safeBytes;
 
-  const country = normalizeCountry(countryRaw);
+  const country = GEO_MODE === 'nginx_geoip' && countryRaw
+    ? normalizeCountry(countryRaw)
+    : resolveCountryFromNodeGeoIp(clientIp);
   parserState.geoRequests.set(country, (parserState.geoRequests.get(country) || 0) + 1);
 }
 
