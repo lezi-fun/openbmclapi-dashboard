@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OpenBMCLAPI CDN 统计面板</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="background-grid"></div>
+    <main class="dashboard">
+      <header class="panel hero">
+        <div>
+          <p class="kicker">OpenBMCLAPI · CDN Observatory</p>
+          <h1>全球请求与带宽实时监控</h1>
+          <p class="subtitle">
+            反向代理目标：<code>https://oapi.lezi.chat</code> · 每 15 秒自动刷新
+          </p>
+        </div>
+        <div class="meta">
+          <span id="utc8Clock">--:--:-- (UTC+8)</span>
+          <span id="lastUpdated">Last update: --</span>
+          <span id="warning" class="warning">数据源：--</span>
+        </div>
+      </header>
+
+      <section class="stats-grid">
+        <article class="panel stat-card">
+          <h2>累计请求数</h2>
+          <p id="totalRequests" class="metric">0</p>
+          <small>自服务启动以来</small>
+        </article>
+
+        <article class="panel stat-card">
+          <h2>累计带宽</h2>
+          <p id="totalBandwidth" class="metric">0 B</p>
+          <small>总下行流量</small>
+        </article>
+
+        <article class="panel stat-card">
+          <h2>今日请求数（UTC+8）</h2>
+          <p id="todayRequests" class="metric">0</p>
+          <small>今日 00:00 至当前</small>
+        </article>
+
+        <article class="panel stat-card">
+          <h2>今日带宽（UTC+8）</h2>
+          <p id="todayBandwidth" class="metric">0 B</p>
+          <small>今日总流量</small>
+        </article>
+      </section>
+
+      <section class="charts-grid">
+        <article class="panel chart-card">
+          <h2>请求趋势（每 5 分钟）</h2>
+          <div id="requestTrend" class="chart"></div>
+        </article>
+
+        <article class="panel chart-card">
+          <h2>带宽趋势（每 5 分钟）</h2>
+          <div id="bandwidthTrend" class="chart"></div>
+        </article>
+      </section>
+
+      <section class="panel map-card">
+        <div class="map-header">
+          <h2>请求地区分布</h2>
+          <p>颜色越红，请求越高</p>
+        </div>
+        <div id="worldMap" class="map"></div>
+      </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/map/js/world.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>
