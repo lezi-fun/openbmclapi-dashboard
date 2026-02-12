@@ -6,5 +6,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
+  },
+  "dependencies": {
+    "geoip-lite": "^1.4.10"
   }
 }
