@@ -1,0 +1,10 @@
+{
+  "name": "openbmclapi-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Nginx log powered CDN dashboard",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  }
+}
